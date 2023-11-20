@@ -3,6 +3,7 @@ package main
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -19,7 +20,9 @@ func main() {
 func displayMenu(window fyne.Window) {
 	ac := createAccordion()
 
-	window.SetContent(ac)
+	scrollableAc := container.NewVScroll(ac)
+
+	window.SetContent(scrollableAc)
 }
 
 func createAccordion() fyne.Widget {
