@@ -52,8 +52,9 @@ func displayMenu(window fyne.Window) {
 	ac := createAccordion()
 
 	scrollableAc := container.NewVScroll(ac)
+	columns := container.NewBorder(nil, nil, scrollableAc, nil, nil)
 
-	window.SetContent(scrollableAc)
+	window.SetContent(columns)
 }
 
 func createAccordion() fyne.Widget {
