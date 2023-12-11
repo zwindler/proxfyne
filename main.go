@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -14,43 +15,36 @@ import (
 	"github.com/Telmate/proxmox-api-go/proxmox"
 )
 
+type Node struct {
+	CPU            float64 `json:"cpu"`
+	Disk           float64 `json:"disk"`
+	ID             string  `json:"id"`
+	Level          string  `json:"level"`
+	MaxCPU         int     `json:"maxcpu"`
+	MaxDisk        float64 `json:"maxdisk"`
+	MaxMem         float64 `json:"maxmem"`
+	Mem            float64 `json:"mem"`
+	Node           string  `json:"node"`
+	SSLFingerprint string  `json:"ssl_fingerprint"`
+	Status         string  `json:"status"`
+	Type           string  `json:"type"`
+	Uptime         float64 `json:"uptime"`
+	VMList         []VMDetails
+}
+
 type moxServer struct {
 	serverName string
 	VMList     []VMDetails
 }
 
 type VMDetails struct {
-	id     int
+	ID     int
 	VMName string
 }
-
-var (
-	demo = []moxServer{
-		{serverName: "server1", VMList: []VMDetails{
-			{id: 100, VMName: "vm1-100"},
-			{id: 101, VMName: "vm2-101"},
-		}},
-		{serverName: "server2", VMList: []VMDetails{
-			{id: 200, VMName: "one"},
-			{id: 201, VMName: "two"},
-			{id: 202, VMName: "three"},
-			{id: 203, VMName: "four"},
-			{id: 204, VMName: "five"},
-			{id: 205, VMName: "six"},
-			{id: 206, VMName: "seven"},
-			{id: 207, VMName: "eight"},
-		}},
-	}
-)
 
 func main() {
 	proxfyne := app.New()
 	mainWindow := proxfyne.NewWindow("proxfyne")
-
-	displayMenu(mainWindow)
-
-	mainWindow.Resize(fyne.NewSize(800, 600))
-	mainWindow.ShowAndRun()
 
 	apiUrl := os.Getenv("PM_API_URL")
 	userID := os.Getenv("PM_USER")
@@ -65,10 +59,54 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var vmrefs []proxmox.VmRef
+	vmlist, err := c.GetVmList()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, item := range vmlist["data"].([]interface{}) {
+		vmref := proxmox.VmRef{}
+		nodeJSON, err := json.Marshal(item)
+		if err != nil {
+			fmt.Println("Error marshalling JSON:", err)
+		}
+		err = json.Unmarshal(nodeJSON, &vmref)
+		if err != nil {
+			fmt.Println("Error unmarshalling JSON:", err)
+		}
+		vmrefs = append(vmrefs, vmref)
+	}
+
+	var nodes []Node
+	list, err := c.GetNodeList()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, item := range list["data"].([]interface{}) {
+		node := Node{}
+		nodeJSON, err := json.Marshal(item)
+		if err != nil {
+			fmt.Println("Error marshalling JSON:", err)
+		}
+		err = json.Unmarshal(nodeJSON, &node)
+		if err != nil {
+			fmt.Println("Error unmarshalling JSON:", err)
+		}
+		// TODO add VMs on nodes
+		nodes = append(nodes, node)
+	}
+
+	displayMenu(mainWindow, nodes, vmrefs)
+
+	mainWindow.Resize(fyne.NewSize(800, 600))
+	mainWindow.ShowAndRun()
 }
 
-func displayMenu(window fyne.Window) {
-	ac := createAccordion()
+func displayMenu(window fyne.Window, nodes []Node, vmRefs []proxmox.VmRef) {
+	ac := createAccordion(nodes, vmRefs)
 
 	scrollableAc := container.NewVScroll(ac)
 	columns := container.NewBorder(nil, nil, scrollableAc, nil, nil)
@@ -76,21 +114,33 @@ func displayMenu(window fyne.Window) {
 	window.SetContent(columns)
 }
 
-func createAccordion() fyne.Widget {
+func createAccordion(nodes []Node, vmRefs []proxmox.VmRef) fyne.Widget {
 	ac := widget.NewAccordion()
 
-	for _, server := range demo {
-		ac.Append(widget.NewAccordionItem(server.serverName, createVMList(server.VMList)))
+	for _, node := range nodes {
+		ac.Append(widget.NewAccordionItem(node.Node, createVMList(node.VMList)))
 	}
 	ac.MultiOpen = true
 	return ac
+}
+
+// convertVmList converts the proxmox.VmRef list to VMDetails list
+func convertVmList(vmRefs []proxmox.VmRef) []VMDetails {
+	var vmDetailsList []VMDetails
+
+	for _, vmRef := range vmRefs {
+		currentId := vmRef.VmId()
+		vmDetailsList = append(vmDetailsList, VMDetails{ID: currentId, VMName: "toto"})
+	}
+
+	return vmDetailsList
 }
 
 func createVMList(vmlist []VMDetails) fyne.CanvasObject {
 	canvas := container.NewVBox()
 
 	for _, vm := range vmlist {
-		vmstring := fmt.Sprintf("%d - %s", vm.id, vm.VMName)
+		vmstring := fmt.Sprintf("%d - %s", vm.ID, vm.VMName)
 		canvas.Add(widget.NewLabel(vmstring))
 	}
 
