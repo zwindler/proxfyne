@@ -1,12 +1,17 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
+	"log"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/Telmate/proxmox-api-go/proxmox"
 )
 
 type moxServer struct {
@@ -46,6 +51,20 @@ func main() {
 
 	mainWindow.Resize(fyne.NewSize(800, 600))
 	mainWindow.ShowAndRun()
+
+	apiUrl := os.Getenv("PM_API_URL")
+	userID := os.Getenv("PM_USER")
+	password := os.Getenv("PM_PASS")
+	http_headers := os.Getenv("PM_HTTP_HEADERS")
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	c, err := proxmox.NewClient(apiUrl, nil, http_headers, tlsConfig, "", 5)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = c.Login(userID, password, "")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func displayMenu(window fyne.Window) {
