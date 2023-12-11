@@ -49,23 +49,24 @@ func displayMenu(window fyne.Window, c *proxmox.Client) {
 func createAccordion(nodes []Node, vmList []VMDetails) fyne.Widget {
 	ac := widget.NewAccordion()
 
-	toto := make(map[string][]int)
+	// reorder VMDetails by nodes in a map
+	vmMap := make(map[string][]VMDetails)
 	for _, vm := range vmList {
-		toto[vm.Node] = append(toto[vm.Node], vm.VmID)
+		vmMap[vm.Node] = append(vmMap[vm.Node], vm)
 	}
 
 	for _, node := range nodes {
-		ac.Append(widget.NewAccordionItem(node.Node, createVMList(toto[node.Node])))
+		ac.Append(widget.NewAccordionItem(node.Node, createVMList(vmMap[node.Node])))
 	}
 	ac.MultiOpen = true
 	return ac
 }
 
-func createVMList(vmList []int) fyne.CanvasObject {
+func createVMList(vmList []VMDetails) fyne.CanvasObject {
 	canvas := container.NewVBox()
 
-	for _, vmId := range vmList {
-		vmString := fmt.Sprintf("%d", vmId)
+	for _, vm := range vmList {
+		vmString := fmt.Sprintf("%d - %s", vm.VmID, vm.Name)
 		canvas.Add(widget.NewLabel(vmString))
 	}
 
