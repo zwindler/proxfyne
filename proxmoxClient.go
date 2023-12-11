@@ -28,8 +28,24 @@ type Node struct {
 }
 
 type VMDetails struct {
-	ID     int
-	VMName string
+	CPU       float64 `json:"cpu"`
+	Disk      float64 `json:"disk"`
+	DiskRead  float64 `json:"diskread"`
+	DiskWrite float64 `json:"diskwrite"`
+	ID        string  `json:"id"`
+	MaxCPU    int     `json:"maxcpu"`
+	MaxDisk   float64 `json:"maxdisk"`
+	MaxMem    float64 `json:"maxmem"`
+	Mem       float64 `json:"mem"`
+	Name      string  `json:"name"`
+	NetIn     float64 `json:"netin"`
+	NetOut    float64 `json:"netout"`
+	Node      string  `json:"node"`
+	Status    string  `json:"status"`
+	Template  int     `json:"template"`
+	Type      string  `json:"type"`
+	Uptime    float64 `json:"uptime"`
+	VmID      int     `json:"vmid"`
 }
 
 func createClient() (c *proxmox.Client, err error) {
@@ -49,23 +65,23 @@ func createClient() (c *proxmox.Client, err error) {
 	return
 }
 
-func getVMs(c *proxmox.Client) (vmrefs []proxmox.VmRef, err error) {
+func getVMs(c *proxmox.Client) (vms []VMDetails, err error) {
 	vmList, err := c.GetVmList()
 	if err != nil {
 		return
 	}
 
 	for _, item := range vmList["data"].([]interface{}) {
-		vmref := proxmox.VmRef{}
+		vmInfos := VMDetails{}
 		nodeJSON, err := json.Marshal(item)
 		if err != nil {
-			return []proxmox.VmRef{}, fmt.Errorf("error unMarshalling JSON: %w", err)
+			return []VMDetails{}, fmt.Errorf("error unMarshalling JSON: %w", err)
 		}
-		err = json.Unmarshal(nodeJSON, &vmref)
+		err = json.Unmarshal(nodeJSON, &vmInfos)
 		if err != nil {
-			return []proxmox.VmRef{}, fmt.Errorf("error unMarshalling JSON: %w", err)
+			return []VMDetails{}, fmt.Errorf("error unMarshalling JSON: %w", err)
 		}
-		vmrefs = append(vmrefs, vmref)
+		vms = append(vms, vmInfos)
 	}
 	return
 }

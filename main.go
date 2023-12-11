@@ -28,7 +28,7 @@ func main() {
 }
 
 func displayMenu(window fyne.Window, c *proxmox.Client) {
-	vmRefs, err := getVMs(c)
+	vmList, err := getVMs(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func displayMenu(window fyne.Window, c *proxmox.Client) {
 		log.Fatal(err)
 	}
 
-	ac := createAccordion(nodes, vmRefs)
+	ac := createAccordion(nodes, vmList)
 
 	scrollableAc := container.NewVScroll(ac)
 	columns := container.NewBorder(nil, nil, scrollableAc, nil, nil)
@@ -46,21 +46,26 @@ func displayMenu(window fyne.Window, c *proxmox.Client) {
 	window.SetContent(columns)
 }
 
-func createAccordion(nodes []Node, vmRefs []proxmox.VmRef) fyne.Widget {
+func createAccordion(nodes []Node, vmList []VMDetails) fyne.Widget {
 	ac := widget.NewAccordion()
 
+	toto := make(map[string][]int)
+	for _, vm := range vmList {
+		toto[vm.Node] = append(toto[vm.Node], vm.VmID)
+	}
+
 	for _, node := range nodes {
-		ac.Append(widget.NewAccordionItem(node.Node, createVMList(node.VMList)))
+		ac.Append(widget.NewAccordionItem(node.Node, createVMList(toto[node.Node])))
 	}
 	ac.MultiOpen = true
 	return ac
 }
 
-func createVMList(vmList []VMDetails) fyne.CanvasObject {
+func createVMList(vmList []int) fyne.CanvasObject {
 	canvas := container.NewVBox()
 
-	for _, vm := range vmList {
-		vmString := fmt.Sprintf("%d - %s", vm.ID, vm.VMName)
+	for _, vmId := range vmList {
+		vmString := fmt.Sprintf("%d", vmId)
 		canvas.Add(widget.NewLabel(vmString))
 	}
 
