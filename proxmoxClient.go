@@ -48,7 +48,7 @@ type VMDetails struct {
 	VmID      int     `json:"vmid"`
 }
 
-func createClient() (c *proxmox.Client, err error) {
+func proxfyneCreateClient() (c *proxmox.Client, err error) {
 	apiUrl := os.Getenv("PM_API_URL")
 	userID := os.Getenv("PM_USER")
 	password := os.Getenv("PM_PASS")
