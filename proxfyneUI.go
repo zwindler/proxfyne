@@ -69,20 +69,22 @@ func createVMList(vmList []VMDetails) fyne.CanvasObject {
 func updateDetails(vm VMDetails) {
 	details.RemoveAll()
 
-	vm1stEntry := canvas.NewText(vm.Name, color.Black)
-	details.Add(vm1stEntry)
-
-	vm2ndEntry := container.NewBorder(nil, nil,
-		canvas.NewText("Status", color.Black), canvas.NewText(vm.Status, color.Black), nil)
-	details.Add(vm2ndEntry)
-
-	vm3rdEntry := container.NewBorder(nil, nil,
-		canvas.NewText("Node", color.Black), canvas.NewText(vm.Node, color.Black), nil)
-	details.Add(vm3rdEntry)
-
-	// todo refresh CPU usage
-	cpuUsage := vm.CPU * 100
-	vm4thEntry := container.NewBorder(nil, nil,
-		canvas.NewText("CPU usage", color.Black), canvas.NewText(strconv.FormatFloat(cpuUsage, 'f', -1, 64), color.Black), nil)
-	details.Add(vm4thEntry)
+	if (vm != VMDetails{}) {
+		vm1stEntry := canvas.NewText(vm.Name, color.Black)
+		details.Add(vm1stEntry)
+	
+		vm2ndEntry := container.NewBorder(nil, nil,
+			canvas.NewText("Status", color.Black), canvas.NewText(vm.Status, color.Black), nil)
+		details.Add(vm2ndEntry)
+	
+		vm3rdEntry := container.NewBorder(nil, nil,
+			canvas.NewText("Node", color.Black), canvas.NewText(vm.Node, color.Black), nil)
+		details.Add(vm3rdEntry)
+	
+		// todo refresh CPU usage
+		cpuUsage := vm.CPU * 100
+		vm4thEntry := container.NewBorder(nil, nil,
+			canvas.NewText("CPU usage", color.Black), canvas.NewText(strconv.FormatFloat(cpuUsage, 'f', 2, 64), color.Black), nil)
+		details.Add(vm4thEntry)
+	}
 }
