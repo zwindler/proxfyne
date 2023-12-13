@@ -1,6 +1,6 @@
 module github.com/zwindler/proxfyne
 
-go 1.21.1
+go 1.18
 
 require (
 	fyne.io/fyne/v2 v2.4.1

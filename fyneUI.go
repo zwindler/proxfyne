@@ -1,5 +1,18 @@
 package main
 
+import (
+	"fmt"
+	"image/color"
+	"log"
+	"strconv"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
+	"github.com/Telmate/proxmox-api-go/proxmox"
+)
+
 var details = container.NewVBox()
 
 func displayUI(window fyne.Window, c *proxmox.Client) {

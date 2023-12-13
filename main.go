@@ -1,18 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"image/color"
 	"log"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
-
-	"github.com/Telmate/proxmox-api-go/proxmox"
 )
 
 func main() {
